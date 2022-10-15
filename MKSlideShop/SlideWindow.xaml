@@ -1,0 +1,49 @@
+﻿<Window x:Class="MKSlideShop.SlideWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MKSlideShop" d:DataContext="{d:DesignInstance Type=local:SlideWindowModel}"
+        mc:Ignorable="d"
+        Title="MKSlide Show" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Column="0" Grid.Row="0" Background="Black"> 
+            <Image x:Name="selectedImage" Grid.Column="0" Grid.Row="0" 
+               HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2"/>
+        </Grid>
+        <StatusBar x:Name="statBar" Grid.Column="0" Grid.Row="1"
+            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <StatusBarItem>
+                <Button Content="-" Name="butBack" Width="20" IsEnabled="{Binding CanBack}" ToolTip="Back to last image" />
+            </StatusBarItem>
+            <StatusBarItem>
+                <Button Content="II" Name="butPause" Width="20" IsEnabled="{Binding CanPause}" ToolTip="Pause the show" />
+            </StatusBarItem>
+            <StatusBarItem>
+                <Button Content=">" Name="butRun" Width="20" IsEnabled="{Binding CanRun}" ToolTip="Run after pause" />
+            </StatusBarItem>
+            <Separator/>
+            <StatusBarItem Visibility="{Binding NumVisible}">
+                <TextBlock Text="{Binding NumFiles}"/>
+            </StatusBarItem>
+            <Separator Visibility="{Binding NumVisible}"/>
+            <StatusBarItem HorizontalAlignment="Stretch">
+                <!--<TextBlock Text="{Binding CurrentFile}"/>-->
+                <TextBox Text="{Binding CurrentFile}" IsReadOnly="True" HorizontalAlignment="Stretch" ToolTip="The current file name" >
+                </TextBox>
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="X" Name="butExplore" Width="20" ToolTip="Open Explorer in the image folder" Margin="0,0,5,0" />
+                    <Button Content="i" Name="butInfo" Width="20" ToolTip="Show details about the current image" />
+                </StackPanel>
+            </StatusBarItem>
+        </StatusBar>
+            
+    </Grid>
+    
+</Window>
