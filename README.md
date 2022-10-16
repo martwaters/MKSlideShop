@@ -15,7 +15,11 @@ Yet I did not need those parameters ...
 
 Currently supported formats (**file extensions**): **jpg, bmp, tif**
 
-Active screen elements have tooltips about there usage.
+Active screen elements have tooltips about there usage.<br>
+
+The program is compiled with Visual Studio Version 17.3.4<br>
+Setup is created with Inno Setup 6.2.1.
+The program uses the MetadataExtractor by Drew Noakes,<br>the NLog logging packages and the APICodepack ShellExtensions.
 
 Have fun<br>
 Martin
