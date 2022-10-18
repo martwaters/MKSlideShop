@@ -18,7 +18,7 @@
         <StatusBar x:Name="statBar" Grid.Column="0" Grid.Row="1"
             HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <StatusBarItem>
-                <Button Content="-" Name="butBack" Width="20" IsEnabled="{Binding CanBack}" ToolTip="Back to last image" />
+                <Button Content="&lt;" Name="butBack" Width="20" IsEnabled="{Binding CanBack}" ToolTip="Back to last image" />
             </StatusBarItem>
             <StatusBarItem>
                 <Button Content="II" Name="butPause" Width="20" IsEnabled="{Binding CanPause}" ToolTip="Pause the show" />

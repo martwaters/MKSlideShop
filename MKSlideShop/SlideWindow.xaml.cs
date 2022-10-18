@@ -41,7 +41,6 @@ namespace MKSlideShop
             butPause.Click += viewModel.PauseClicked;
             butRun.Click += viewModel.RunClicked;
             butBack.Click += viewModel.BackClicked;
-            butBack.Content = "<";
             butExplore.Click += viewModel.ExploreClicked;
         }
 
