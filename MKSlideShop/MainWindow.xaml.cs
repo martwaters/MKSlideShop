@@ -17,9 +17,9 @@ namespace MKSlideShop
         {
             log.Trace($"Start main window");
             InitializeComponent();
-            InitControls();
-
             viewModel.LoadSetting();
+
+            InitControls();
         }
         private void InitControls()
         {
@@ -29,8 +29,8 @@ namespace MKSlideShop
             butStartShow.Click += viewModel.ButStartShow;
             pathListBox.KeyDown += viewModel.KeyDown;
 
-            Closed += viewModel.MainClosed;
-
+            Closing += viewModel.MainClosing;
+            SourceInitialized += viewModel.WindowInitialized;
         }
     }
 }

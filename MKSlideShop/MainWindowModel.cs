@@ -30,7 +30,7 @@ namespace MKSlideShop
         #region Properties
 
         static readonly Logger log = LogManager.GetCurrentClassLogger();
-        private ShowSettings settings = ShowSettings.Default;
+        private static ShowSettings settings = ShowSettings.Default;
 
         /// <summary>
         /// Paths to be scanned for images
@@ -79,10 +79,29 @@ namespace MKSlideShop
             settings.LastPaths.AddRange(Paths.ToArray());
             settings.ShowTime = Duration;
             settings.BrowserPath = ExplorerPath;
+
             settings.Save();
         }
-        internal void MainClosed(object? sender, EventArgs e)
+
+        internal void MainClosing(object sender, CancelEventArgs e)
         {
+            if (sender is MainWindow mw)
+            {
+                log.Debug($"Store MainWin: {mw.WindowState} L={mw.Left} W={mw.Width} T={mw.Top} H={mw.Height}");
+
+                if (settings == null)
+                    throw new System.ArgumentNullException(nameof(settings));
+
+                settings.MainState = (int)mw.WindowState;
+                if (!mw.WindowState.Equals(WindowState.Minimized))
+                {
+                    settings.MainLeft = mw.Left;
+                    settings.MainWidth = mw.Width;
+                    settings.MainTop = mw.Top;
+                    settings.MainHeight = mw.Height;
+                }
+            }
+
             SaveSettings();
         }
 
@@ -188,7 +207,7 @@ namespace MKSlideShop
         /// <param name="e"></param>
         internal void ButStartShow(object sender, RoutedEventArgs e)
         {
-            log.Debug($"Start Show ({Paths}):");
+            log.Debug($"Start Show ({Paths.Count} path(s)):");
 
             foreach (var s in Paths)
                     log.Debug($"\t{s}");
@@ -209,8 +228,25 @@ namespace MKSlideShop
                 return;
             }
 
-            SlideWindow slides = new SlideWindow(settings.BrowserPath);
-            slides.StartShow(settings);
+            SlideWindow slides = new SlideWindow(settings);
+            slides.StartShow();
+        }
+
+        internal void WindowInitialized(object? sender, EventArgs e)
+        {
+            if (sender is MainWindow mw && settings != null)
+            {
+                log.Debug($"Restore Position: {(WindowState)settings.MainState} L={settings.MainLeft} W={settings.MainWidth} T={settings.MainTop} H={settings.MainHeight}");
+                if (settings.MainWidth > 0 && settings.MainHeight > 0)
+                {
+                    mw.Left = settings.MainLeft;
+                    mw.Width = settings.MainWidth;
+                    mw.Top = settings.MainTop;
+                    mw.Height = settings.MainHeight;
+
+                    mw.WindowState = (WindowState)settings.MainState;
+                }
+            }
         }
     }
 }

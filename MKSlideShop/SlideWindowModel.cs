@@ -122,7 +122,13 @@ namespace MKSlideShop
         int CurrentIdx { get; set; } = 0;
         public string BrowserPath { get; internal set; } = string.Empty;
 
+        ShowSettings slideSettings = ShowSettings.Default;
+
         #endregion // Properties
+        internal SlideWindowModel(ShowSettings settings)
+        {
+            slideSettings = settings;
+        }
 
         #region Collect Files
 
@@ -139,8 +145,7 @@ namespace MKSlideShop
         /// <summary>
         /// Walk through the configured paths to collect images
         /// </summary>
-        /// <param name="settings"></param>
-        internal void SlideWalk(ShowSettings settings)
+        internal void SlideWalk()
         {
             log.Debug("Init Slide Walk");
 
@@ -152,15 +157,15 @@ namespace MKSlideShop
 
             log.Debug("Start Slideshow Timer");
 
-            int secTicks = settings.ShowTime * 1000;
+            int secTicks = slideSettings.ShowTime * 1000;
             FWTimer = new System.Timers.Timer(secTicks);
             FWTimer.AutoReset = true;
 
             FWTimer.Elapsed += FWTimer_Elapsed;
             FWTimer.Enabled = true;
 
-            string[] paths = new string[settings.LastPaths.Count];
-            settings.LastPaths.CopyTo(paths, 0);
+            string[] paths = new string[slideSettings.LastPaths.Count];
+            slideSettings.LastPaths.CopyTo(paths, 0);
 
             log.Debug("Find slides");
             FWorker.FindSlides(pathWalk, paths);
@@ -185,7 +190,7 @@ namespace MKSlideShop
             FWorker.Stop();
             SetRunning(false);
 
-            ShowRandomImage();
+            //ShowRandomImage();
 
         }
 
@@ -215,6 +220,8 @@ namespace MKSlideShop
                         log.Trace($"Store slide {fw.NFiles}: {slide.FInfo.FullName}\r\n");
                         NumFiles = fw.NFiles;
                         SlideStore.AddSlide(slide);
+                        if(int.TryParse(NumFiles, out int nFiles ) && nFiles == 1)
+                            ShowRandomImage();
                     }
                 }
             }
@@ -489,6 +496,46 @@ namespace MKSlideShop
                 FWTimer.Close();
             }
 
+            if(sender is SlideWindow sw)
+            {
+                log.Debug($"Store Position: {sw.WindowState} L={sw.Left} W={sw.Width} T={sw.Top} H={sw.Height}");
+                
+                if(slideSettings == null)
+                    throw new System.ArgumentNullException(nameof(slideSettings));  
+
+                slideSettings.SlideState = (int) sw.WindowState;
+                if (!sw.WindowState.Equals(WindowState.Minimized))
+                {
+                    slideSettings.SlideLeft = sw.Left;
+                    slideSettings.SlideWidth = sw.Width;
+                    slideSettings.SlideTop = sw.Top;
+                    slideSettings.SlideHeight = sw.Height;
+
+                    slideSettings.Save();
+                }
+            }
+        }
+
+        /// <summary>
+        /// SourceInitialized response
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        internal void WindowInitialized(object? sender, EventArgs e)
+        {
+            if (sender is SlideWindow sw && slideSettings != null)
+            {
+                log.Debug($"Restore Position: {(WindowState)slideSettings.SlideState} L={slideSettings.SlideLeft} W={slideSettings.SlideWidth} T={slideSettings.SlideTop} H={slideSettings.SlideHeight}");
+                if (slideSettings.SlideWidth > 0 && slideSettings.SlideHeight > 0)
+                {
+                    sw.Left = slideSettings.SlideLeft;
+                    sw.Width = slideSettings.SlideWidth;
+                    sw.Top = slideSettings.SlideTop;
+                    sw.Height = slideSettings.SlideHeight;
+
+                    sw.WindowState = (WindowState)slideSettings.SlideState;
+                }
+            }
         }
 
         #endregion // Event handlers
