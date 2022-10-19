@@ -1,13 +1,16 @@
-﻿using Microsoft.WindowsAPICodePack.Dialogs;
+﻿using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using NLog;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Xml;
 
 namespace MKSlideShop
 {
@@ -35,7 +38,7 @@ namespace MKSlideShop
         /// <summary>
         /// Paths to be scanned for images
         /// </summary>
-        private ObservableCollection<string> paths = new ObservableCollection<string>();
+        private ObservableCollection<string> paths = new();
         public ObservableCollection<string> Paths
         {
             get { return paths; }
@@ -73,6 +76,23 @@ namespace MKSlideShop
 
         #region Settings operations
 
+        internal void WindowInitialized(object? sender, EventArgs e)
+        {
+            if (sender is MainWindow mw && settings != null)
+            {
+                log.Debug($"Restore Position: {(WindowState)settings.MainState} L={settings.MainLeft} W={settings.MainWidth} T={settings.MainTop} H={settings.MainHeight}");
+                if (settings.MainWidth > 0 && settings.MainHeight > 0)
+                {
+                    mw.Left = settings.MainLeft;
+                    mw.Width = settings.MainWidth;
+                    mw.Top = settings.MainTop;
+                    mw.Height = settings.MainHeight;
+
+                    mw.WindowState = (WindowState)settings.MainState;
+                }
+            }
+        }
+
         private void SaveSettings()
         {
             settings.LastPaths = new System.Collections.Specialized.StringCollection();
@@ -90,7 +110,7 @@ namespace MKSlideShop
                 log.Debug($"Store MainWin: {mw.WindowState} L={mw.Left} W={mw.Width} T={mw.Top} H={mw.Height}");
 
                 if (settings == null)
-                    throw new System.ArgumentNullException(nameof(settings));
+                    throw new System.FieldAccessException(nameof(settings));
 
                 settings.MainState = (int)mw.WindowState;
                 if (!mw.WindowState.Equals(WindowState.Minimized))
@@ -107,7 +127,7 @@ namespace MKSlideShop
 
         internal void LoadSetting()
         {
-            ObservableCollection<string> collect = new ObservableCollection<string>();
+            ObservableCollection<string> collect = new();
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1)
             {
@@ -148,7 +168,7 @@ namespace MKSlideShop
                 {
                     if (listBox.SelectedItem is string path)
                     {
-                        ObservableCollection<string> collect = new ObservableCollection<string>(Paths);
+                        ObservableCollection<string> collect = new(Paths);
                         collect.Remove(path);
                         Paths = collect;
                     }
@@ -190,8 +210,10 @@ namespace MKSlideShop
                 }
                 else
                 {
-                    ObservableCollection<string> collect = new ObservableCollection<string>(Paths);
-                    collect.Add(dlg.FileName);
+                    ObservableCollection<string> collect = new(Paths)
+                    {
+                        dlg.FileName
+                    };
                     Paths = collect;
                 }
             }
@@ -228,25 +250,43 @@ namespace MKSlideShop
                 return;
             }
 
-            SlideWindow slides = new SlideWindow(settings);
+            SlideWindow slides = new(settings);
             slides.StartShow();
         }
 
-        internal void WindowInitialized(object? sender, EventArgs e)
+        internal void StoreShow(object sender, RoutedEventArgs e)
         {
-            if (sender is MainWindow mw && settings != null)
+            SaveSettings();
+            SaveFileDialog sFD = new()
             {
-                log.Debug($"Restore Position: {(WindowState)settings.MainState} L={settings.MainLeft} W={settings.MainWidth} T={settings.MainTop} H={settings.MainHeight}");
-                if (settings.MainWidth > 0 && settings.MainHeight > 0)
-                {
-                    mw.Left = settings.MainLeft;
-                    mw.Width = settings.MainWidth;
-                    mw.Top = settings.MainTop;
-                    mw.Height = settings.MainHeight;
-
-                    mw.WindowState = (WindowState)settings.MainState;
-                }
+                DefaultExt=".slides",
+                Filter= "MKSlides settings (.slides)|*.slides"
+            };
+            if(sFD.ShowDialog() == true)
+            {
+                // iterate settings.Properties ...
+                File.WriteAllText(sFD.FileName, settings.ToString());                
             }
+        }
+
+        internal void RestoreShow(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog oFD = new()
+            {
+                DefaultExt = ".slides",
+                Filter = "MKSlides settings (.slides)|*.slides"
+            };
+            if(oFD.ShowDialog() == true)
+            {
+                //XmlReader rd = new XmlReader<ShowSettings>();
+
+            }
+        }
+
+        internal void AboutDialog(object sender, RoutedEventArgs e)
+        {
+            AboutDialog ad = new();
+            ad.ShowDialog();
         }
     }
 }

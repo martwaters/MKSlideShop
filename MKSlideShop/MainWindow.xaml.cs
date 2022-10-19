@@ -27,6 +27,11 @@ namespace MKSlideShop
 
             butAddFolder.Click += viewModel.ButAddFolder;
             butStartShow.Click += viewModel.ButStartShow;
+
+            butSaveShow.Click += viewModel.StoreShow;
+            butLoadShow.Click += viewModel.RestoreShow;
+            butAbout.Click += viewModel.AboutDialog;
+
             pathListBox.KeyDown += viewModel.KeyDown;
 
             Closing += viewModel.MainClosing;

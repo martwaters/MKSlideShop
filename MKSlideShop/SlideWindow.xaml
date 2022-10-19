@@ -12,7 +12,7 @@
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
         <Grid Grid.Column="0" Grid.Row="0" Background="Black"> 
-            <Image x:Name="selectedImage" Grid.Column="0" Grid.Row="0" 
+            <Image x:Name="selectedImage" Grid.Column="0" Grid.Row="0" ToolTip="{Binding SelImgTip}"
                HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2"/>
         </Grid>
         <StatusBar x:Name="statBar" Grid.Column="0" Grid.Row="1"

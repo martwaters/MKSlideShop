@@ -80,6 +80,18 @@ namespace MKSlideShop
         }
         private int numFiles;
 
+        
+        public string SelImgTip
+        {
+            get { return selImgTip; }
+            set
+            {
+                selImgTip = value;
+                OnPropertyChanged();
+            }
+        }
+        private string selImgTip = string.Empty;
+
         /// <summary>
         /// Hiding NumFiles by default
         /// </summary>
@@ -220,7 +232,7 @@ namespace MKSlideShop
                         log.Trace($"Store slide {fw.NFiles}: {slide.FInfo.FullName}\r\n");
                         NumFiles = fw.NFiles;
                         SlideStore.AddSlide(slide);
-                        if(int.TryParse(NumFiles, out int nFiles ) && nFiles == 1)
+                        if(int.TryParse(NumFiles, out int nFiles ) && nFiles == 5)
                             ShowRandomImage();
                     }
                 }
@@ -287,6 +299,8 @@ namespace MKSlideShop
                     CurrentFile = SlideStore.Slides[idx].FInfo.FullName;
                     if (File.Exists(CurrentFile))
                     {
+                        SelImgTip = String.Format($"Image {idx}({NumFiles}): {fName} ({SlideStore.Slides[idx].FInfo.LastWriteTime})");
+
                         LastIdx = CurrentIdx;
                         CurrentIdx = idx;
                         UpdateImage();
