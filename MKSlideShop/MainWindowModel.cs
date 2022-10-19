@@ -7,9 +7,11 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Shapes;
 using System.Xml;
 
 namespace MKSlideShop
@@ -262,10 +264,15 @@ namespace MKSlideShop
                 DefaultExt=".slides",
                 Filter= "MKSlides settings (.slides)|*.slides"
             };
+
             if(sFD.ShowDialog() == true)
             {
+                SettingsXml setx = new SettingsXml(settings);
                 // iterate settings.Properties ...
-                File.WriteAllText(sFD.FileName, settings.ToString());                
+                string setString = XmlClassSerializer.Object2Xml(setx);
+                File.WriteAllText(sFD.FileName, setString);                
+               
+
             }
         }
 
@@ -279,6 +286,48 @@ namespace MKSlideShop
             if(oFD.ShowDialog() == true)
             {
                 //XmlReader rd = new XmlReader<ShowSettings>();
+                string xml = File.ReadAllText(oFD.FileName); 
+                if(XmlClassSerializer.Xml2Object(xml, typeof(SettingsXml)) is SettingsXml setx)
+                {
+                    // Apply setx
+                    Paths = new ObservableCollection<string>(setx.Paths);
+                    Duration = setx.ShowTime;
+                    ExplorerPath = setx.Browser;
+
+                    settings.SlideState = setx.SState;
+                    settings.SlideLeft = setx.SLeft;
+                    settings.SlideTop = setx.STop;
+                    settings.SlideWidth = setx.SWidth;
+                    settings.SlideHeight = setx.SHeight;
+
+                    settings.MainState = setx.MState;
+                    settings.MainLeft = setx.MLeft;
+                    settings.MainTop = setx.MTop;
+                    settings.MainWidth = setx.MWidth;
+                    settings.MainHeight = setx.MHeight;
+
+                    if (sender is FrameworkElement parent)
+                    {
+                        while (parent.Parent is FrameworkElement pw)
+                        {
+                            if (pw is MainWindow mw)
+                            {
+                                // show position
+                                mw.Left = setx.MLeft;
+                                mw.Top = setx.MTop;
+                                mw.Width = setx.MWidth;
+                                mw.Height = setx.MHeight;
+                                mw.WindowState = (WindowState) setx.MState;
+                                mw.Show();
+                                break;
+                            }
+                            else
+                            {
+                                parent = pw;
+                            }
+                        }
+                    }
+                }
 
             }
         }
