@@ -8,41 +8,51 @@ namespace MKSlideShop
     /// </summary>
     public partial class SlideWindow : Window 
     {
-        private SlideWindowModel viewModel = new SlideWindowModel();
+        private SlideWindowModel? viewModel;
 
         static readonly Logger log = LogManager.GetCurrentClassLogger();
 
         /// <summary>
         /// A window to display a single image, information and handlers
         /// </summary>
-        public SlideWindow(string browserPath)
+        public SlideWindow(ShowSettings settings)
         {
             InitializeComponent();
+            viewModel = new SlideWindowModel(settings);
             viewModel.ImageCtrl = selectedImage;
-            viewModel.BrowserPath = browserPath;
+            viewModel.BrowserPath = settings.BrowserPath;
             //?? viewModel.ImageCtrl.SetImageShader
+
             DataContext = viewModel;
+            
             InitControls();
 
-            this.Closing += viewModel.WindowClosing;
+            Closing += viewModel.WindowClosing;
         }
 
         private void InitControls()
         {
+            if (viewModel == null)
+                throw new System.ArgumentNullException("ViewModel not allocated!");
+
+            SourceInitialized += viewModel.WindowInitialized;
+
             butInfo.Click += viewModel.InfoClicked;
             butPause.Click += viewModel.PauseClicked;
             butRun.Click += viewModel.RunClicked;
             butBack.Click += viewModel.BackClicked;
-            butBack.Content = "<";
             butExplore.Click += viewModel.ExploreClicked;
         }
 
-        internal void StartShow(ShowSettings settings)
+        internal void StartShow()
         {
             log.Trace("Start Show");
             Show();
 
-            viewModel.SlideWalk(settings);
+            if (viewModel == null)
+                throw new System.ArgumentNullException("ViewModel not allocated!");
+
+            viewModel.SlideWalk();
         }
 
     }

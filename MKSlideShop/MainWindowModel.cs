@@ -1,13 +1,18 @@
-﻿using Microsoft.WindowsAPICodePack.Dialogs;
+﻿using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using NLog;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Shapes;
+using System.Xml;
 
 namespace MKSlideShop
 {
@@ -30,12 +35,12 @@ namespace MKSlideShop
         #region Properties
 
         static readonly Logger log = LogManager.GetCurrentClassLogger();
-        private ShowSettings settings = ShowSettings.Default;
+        private static ShowSettings settings = ShowSettings.Default;
 
         /// <summary>
         /// Paths to be scanned for images
         /// </summary>
-        private ObservableCollection<string> paths = new ObservableCollection<string>();
+        private ObservableCollection<string> paths = new();
         public ObservableCollection<string> Paths
         {
             get { return paths; }
@@ -73,22 +78,58 @@ namespace MKSlideShop
 
         #region Settings operations
 
+        internal void WindowInitialized(object? sender, EventArgs e)
+        {
+            if (sender is MainWindow mw && settings != null)
+            {
+                log.Debug($"Restore Position: {(WindowState)settings.MainState} L={settings.MainLeft} W={settings.MainWidth} T={settings.MainTop} H={settings.MainHeight}");
+                if (settings.MainWidth > 0 && settings.MainHeight > 0)
+                {
+                    mw.Left = settings.MainLeft;
+                    mw.Width = settings.MainWidth;
+                    mw.Top = settings.MainTop;
+                    mw.Height = settings.MainHeight;
+
+                    mw.WindowState = (WindowState)settings.MainState;
+                }
+            }
+        }
+
         private void SaveSettings()
         {
             settings.LastPaths = new System.Collections.Specialized.StringCollection();
             settings.LastPaths.AddRange(Paths.ToArray());
             settings.ShowTime = Duration;
             settings.BrowserPath = ExplorerPath;
+
             settings.Save();
         }
-        internal void MainClosed(object? sender, EventArgs e)
+
+        internal void MainClosing(object sender, CancelEventArgs e)
         {
+            if (sender is MainWindow mw)
+            {
+                log.Debug($"Store MainWin: {mw.WindowState} L={mw.Left} W={mw.Width} T={mw.Top} H={mw.Height}");
+
+                if (settings == null)
+                    throw new System.FieldAccessException(nameof(settings));
+
+                settings.MainState = (int)mw.WindowState;
+                if (!mw.WindowState.Equals(WindowState.Minimized))
+                {
+                    settings.MainLeft = mw.Left;
+                    settings.MainWidth = mw.Width;
+                    settings.MainTop = mw.Top;
+                    settings.MainHeight = mw.Height;
+                }
+            }
+
             SaveSettings();
         }
 
         internal void LoadSetting()
         {
-            ObservableCollection<string> collect = new ObservableCollection<string>();
+            ObservableCollection<string> collect = new();
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1)
             {
@@ -129,7 +170,7 @@ namespace MKSlideShop
                 {
                     if (listBox.SelectedItem is string path)
                     {
-                        ObservableCollection<string> collect = new ObservableCollection<string>(Paths);
+                        ObservableCollection<string> collect = new(Paths);
                         collect.Remove(path);
                         Paths = collect;
                     }
@@ -171,8 +212,10 @@ namespace MKSlideShop
                 }
                 else
                 {
-                    ObservableCollection<string> collect = new ObservableCollection<string>(Paths);
-                    collect.Add(dlg.FileName);
+                    ObservableCollection<string> collect = new(Paths)
+                    {
+                        dlg.FileName
+                    };
                     Paths = collect;
                 }
             }
@@ -188,7 +231,7 @@ namespace MKSlideShop
         /// <param name="e"></param>
         internal void ButStartShow(object sender, RoutedEventArgs e)
         {
-            log.Debug($"Start Show ({Paths}):");
+            log.Debug($"Start Show ({Paths.Count} path(s)):");
 
             foreach (var s in Paths)
                     log.Debug($"\t{s}");
@@ -209,8 +252,90 @@ namespace MKSlideShop
                 return;
             }
 
-            SlideWindow slides = new SlideWindow(settings.BrowserPath);
-            slides.StartShow(settings);
+            SlideWindow slides = new(settings);
+            slides.StartShow();
+        }
+
+        internal void StoreShow(object sender, RoutedEventArgs e)
+        {
+            SaveSettings();
+            SaveFileDialog sFD = new()
+            {
+                DefaultExt=".slides",
+                Filter= "MKSlides settings (.slides)|*.slides"
+            };
+
+            if(sFD.ShowDialog() == true)
+            {
+                SettingsXml setx = new SettingsXml(settings);
+                // iterate settings.Properties ...
+                string setString = XmlClassSerializer.Object2Xml(setx);
+                File.WriteAllText(sFD.FileName, setString);                
+               
+
+            }
+        }
+
+        internal void RestoreShow(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog oFD = new()
+            {
+                DefaultExt = ".slides",
+                Filter = "MKSlides settings (.slides)|*.slides"
+            };
+            if(oFD.ShowDialog() == true)
+            {
+                //XmlReader rd = new XmlReader<ShowSettings>();
+                string xml = File.ReadAllText(oFD.FileName); 
+                if(XmlClassSerializer.Xml2Object(xml, typeof(SettingsXml)) is SettingsXml setx)
+                {
+                    // Apply setx
+                    Paths = new ObservableCollection<string>(setx.Paths);
+                    Duration = setx.ShowTime;
+                    ExplorerPath = setx.Browser;
+
+                    settings.SlideState = setx.SState;
+                    settings.SlideLeft = setx.SLeft;
+                    settings.SlideTop = setx.STop;
+                    settings.SlideWidth = setx.SWidth;
+                    settings.SlideHeight = setx.SHeight;
+
+                    settings.MainState = setx.MState;
+                    settings.MainLeft = setx.MLeft;
+                    settings.MainTop = setx.MTop;
+                    settings.MainWidth = setx.MWidth;
+                    settings.MainHeight = setx.MHeight;
+
+                    if (sender is FrameworkElement parent)
+                    {
+                        while (parent.Parent is FrameworkElement pw)
+                        {
+                            if (pw is MainWindow mw)
+                            {
+                                // show position
+                                mw.Left = setx.MLeft;
+                                mw.Top = setx.MTop;
+                                mw.Width = setx.MWidth;
+                                mw.Height = setx.MHeight;
+                                mw.WindowState = (WindowState) setx.MState;
+                                mw.Show();
+                                break;
+                            }
+                            else
+                            {
+                                parent = pw;
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
+        internal void AboutDialog(object sender, RoutedEventArgs e)
+        {
+            AboutDialog ad = new();
+            ad.ShowDialog();
         }
     }
 }

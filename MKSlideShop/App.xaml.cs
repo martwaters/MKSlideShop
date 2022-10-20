@@ -20,6 +20,12 @@ namespace MKSlideShop
             base.OnStartup(e);
             this.DispatcherUnhandledException += DispatchUnhandledException;
 
+#if DEBUG
+            // see nlog.config
+            LogManager.Configuration.Variables["runLevel"] = "Debug";
+            LogManager.ReconfigExistingLoggers();
+#endif
+
             log.Info("########### User {0} starting {1} ###########", Environment.UserName, AppDomain.CurrentDomain.FriendlyName);
 
         }
