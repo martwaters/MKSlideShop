@@ -80,7 +80,9 @@ namespace MKSlideShop
         }
         private int numFiles;
 
-        
+        /// <summary>
+        /// Image  tooltip text
+        /// </summary>
         public string SelImgTip
         {
             get { return selImgTip; }
@@ -243,6 +245,15 @@ namespace MKSlideShop
 
         #region Display Image
 
+        /// <summary>
+        /// Compose text for image tooltip
+        /// </summary>
+        /// <param name="idx"></param>
+        void ShowImageTip(int idx)
+        {
+            SelImgTip = String.Format($"Image {idx+1}({NumFiles}): {SlideStore.Slides[idx].FInfo.Name} ({SlideStore.Slides[idx].FInfo.LastWriteTime})");
+        }
+
         void ShowLastImageByIndex()
         {
             lock (lockObject)
@@ -257,6 +268,8 @@ namespace MKSlideShop
                     {
                         LastIdx = CurrentIdx;
                         CurrentIdx = idx;
+                        ShowImageTip(idx);
+
                         UpdateImage();
                     }
                     else
@@ -274,6 +287,7 @@ namespace MKSlideShop
         int GetNextIdx()
         {
             int idx = RndIdx.Next(SlideStore.Slides.Count);
+
             if (JustDone.Count > SlideStore.Slides.Count / 2)
                 JustDone.Clear();
             else
@@ -283,6 +297,7 @@ namespace MKSlideShop
                 
                 JustDone.Add(idx);
             }
+
             return idx;
         }
 
@@ -299,7 +314,7 @@ namespace MKSlideShop
                     CurrentFile = SlideStore.Slides[idx].FInfo.FullName;
                     if (File.Exists(CurrentFile))
                     {
-                        SelImgTip = String.Format($"Image {idx}({NumFiles}): {fName} ({SlideStore.Slides[idx].FInfo.LastWriteTime})");
+                        ShowImageTip(idx);
 
                         LastIdx = CurrentIdx;
                         CurrentIdx = idx;

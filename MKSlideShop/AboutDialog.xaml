@@ -35,13 +35,14 @@
                     The '<Bold>Save</Bold>' and '<Bold>Load</Bold>' buttons
                     <Run Text="allow to stores the settings&#10;"/>
                     The <Bold>'Start Show'</Bold>
-                    <Run Text="button starts the slide show"/>
+                    <Run Text="button starts the slide show&#10;"/>
+                    Supported image file extensions are: <Bold>jpg, bmp, tif</Bold>
                 </Paragraph>
                 <Paragraph>
                     <Run Text="Have fun&#10;Martin&#10;"/>
-                    <Run Text="(c) 2022"/>
+                    <Run Text="© 2022"/>
                     <Hyperlink Name="hl" 
-                     NavigateUri="https://www.mklabs.info">www.mklabs.de</Hyperlink>
+                     NavigateUri="https://www.mklabs.info">www.mklabs.info</Hyperlink>
                 </Paragraph>
                 <Paragraph>
                     <Run Text="Packages included:&#10;"/>
