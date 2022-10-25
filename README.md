@@ -3,7 +3,7 @@
 
 ### Beware: This is not a shopping software!
 
-MKSlideShop is a simple (C#/.Net) tool to automatically display pictures from my photo collection(s),<br> 
+MKSlideShop is a simple (C#/.Net) tool to automatically display pictures from my photo collection folder(s) in a random sequence,<br> 
 e.g. while I'm doing something else on the PC.
 
 It offers some further simple features, which help me to make the program useful.<br>
