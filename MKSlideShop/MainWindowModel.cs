@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -264,10 +265,15 @@ namespace MKSlideShop
                 DefaultExt=".slides",
                 Filter= "MKSlides settings (.slides)|*.slides"
             };
-
-            if(sFD.ShowDialog() == true)
+            if (!string.IsNullOrEmpty(settings.SettingsPath) && Directory.Exists(settings.SettingsPath))
             {
-                SettingsXml setx = new SettingsXml(settings);
+                sFD.InitialDirectory = settings.SettingsPath;
+            }
+
+            if (sFD.ShowDialog() == true)
+            {
+                settings.SettingsPath = new FileInfo(sFD.FileName).DirectoryName;
+                SettingsXml setx = new(settings);
                 // iterate settings.Properties ...
                 string setString = XmlClassSerializer.Object2Xml(setx);
                 File.WriteAllText(sFD.FileName, setString);                
@@ -283,7 +289,12 @@ namespace MKSlideShop
                 DefaultExt = ".slides",
                 Filter = "MKSlides settings (.slides)|*.slides"
             };
-            if(oFD.ShowDialog() == true)
+            if (!string.IsNullOrEmpty(settings.SettingsPath) && Directory.Exists(settings.SettingsPath))
+            {
+                oFD.InitialDirectory = settings.SettingsPath;
+            }
+
+            if (oFD.ShowDialog() == true)
             {
                 //XmlReader rd = new XmlReader<ShowSettings>();
                 string xml = File.ReadAllText(oFD.FileName); 
@@ -293,6 +304,9 @@ namespace MKSlideShop
                     Paths = new ObservableCollection<string>(setx.Paths);
                     Duration = setx.ShowTime;
                     ExplorerPath = setx.Browser;
+
+                    //settings.SettingsPath = setx.SettingsPath;
+                    settings.SettingsPath = new FileInfo(oFD.FileName).DirectoryName;
 
                     settings.SlideState = setx.SState;
                     settings.SlideLeft = setx.SLeft;

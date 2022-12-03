@@ -405,6 +405,7 @@ namespace MKSlideShop
 
             try
             {
+                log.Debug($"Load Drawing: {CurrentFile}");
                 using (var image = System.Drawing.Image.FromFile(CurrentFile))
                 {
                     log.Trace($"Get Drawing.Image orientation");
@@ -414,6 +415,7 @@ namespace MKSlideShop
                         {
                             rotation = OrientationToRotation((short)prop.Value[0]);
                             log.Trace($"\t\tRotate={rotation}\r\n");
+                            break;
                         }
                     }
                 }
@@ -422,7 +424,7 @@ namespace MKSlideShop
             {
                 log.Error(ox);
                 Pause(true);
-                MessageBox.Show($"Error on file '{currentFile}': {ox.Message}");
+                MessageBox.Show($"Error on file '{currentFile}': {ox.Message}\r\n\r\nPresentation paused!");
             }
 
             return rotation;

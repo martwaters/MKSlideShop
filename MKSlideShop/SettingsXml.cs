@@ -27,6 +27,7 @@ namespace MKSlideShop
         public double SWidth { get; set; }
         public double SHeight { get; set; }
 
+        public string SettingsPath { get; set; } = string.Empty;
         public string Browser { get; set; } = string.Empty;
         public List<string> Paths { get; set; } = new List<string>();
 
@@ -36,6 +37,7 @@ namespace MKSlideShop
         {
 
             Browser = show.BrowserPath;
+            SettingsPath = show.SettingsPath;
 
             ShowTime = show.ShowTime;
 
