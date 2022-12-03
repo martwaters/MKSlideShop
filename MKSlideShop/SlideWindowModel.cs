@@ -498,6 +498,8 @@ namespace MKSlideShop
 
         internal void RunClicked(object sender, RoutedEventArgs e)
         {
+            log.Debug($"Run Clicked");
+            ShowRandomImage();
             Pause(false);
         }
 
