@@ -28,6 +28,12 @@
             <TextBox x:Name="tbxDuration" HorizontalAlignment="Left" ToolTip="Set the duration to display a single image "
                      TextWrapping="Wrap" Text="{Binding Duration}" VerticalAlignment="Center" Width="40" Height="20"/>
             <Label Content="[s]" VerticalAlignment="Center" />
+            <Label Content="On Start" VerticalAlignment="Center" Margin="20,0,0,0" />
+            <RadioButton x:Name="rbKeep" VerticalAlignment="Center" Margin="10,2,0,0" Content="keep" GroupName="OnStartGroup" IsChecked="{Binding KeepChecked}" ToolTip="Keeps this window"/>
+            <RadioButton x:Name="rbHide" VerticalAlignment="Center" Margin="10,2,0,0" Content="hide" GroupName="OnStartGroup" IsChecked="{Binding HideChecked}" ToolTip="Hides this window"/>
+            <RadioButton x:Name="rbClose" VerticalAlignment="Center" Margin="10,2,0,0" Content="close" GroupName="OnStartGroup" IsChecked="{Binding CloseChecked}" ToolTip="Closes this window"/>
+            <Label Content="this window" VerticalAlignment="Center" Margin="10,0,0,0" />
+
         </StackPanel>
         <Label x:Name="labExplore" Grid.Column="0" Grid.Row="2" Content="Explorer:" Height="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         <TextBox x:Name="tbxExplore" Grid.Column="1" Grid.Row="2" Margin="10" ToolTip="Alternative program instead of Windows Explorer. Default: empty"

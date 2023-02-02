@@ -18,6 +18,8 @@ namespace MKSlideShop
         public double MWidth { get; set; }
         public double MHeight { get; set; }
 
+        public int MKeep { get; set; }
+
         /// <summary>
         /// SlideWindow State
         /// </summary>
@@ -47,6 +49,7 @@ namespace MKSlideShop
             MTop = show.MainTop;
             MWidth =show.MainWidth;
 
+            MKeep = show.MainOnStart;
 
             SState = show.SlideState;
 

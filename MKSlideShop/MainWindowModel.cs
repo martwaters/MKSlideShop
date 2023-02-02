@@ -35,6 +35,29 @@ namespace MKSlideShop
 
         #region Properties
 
+        public enum StartChanges : ushort { keep = 0, hide = 1, close = 2 };
+        public StartChanges StartChange 
+        { 
+            get { return startChange; } 
+            set
+            {
+                startChange = value;
+                switch (startChange)
+                {
+                    case StartChanges.keep:
+                        KeepChecked = true; CloseChecked = false; HideChecked = false;
+                        break;
+                    case StartChanges.close:
+                        CloseChecked = true; HideChecked = false; KeepChecked = false;
+                        break;
+                    case StartChanges.hide:
+                        HideChecked = true; CloseChecked = false; KeepChecked = false;
+                        break;
+                }
+            }
+        }
+        private StartChanges startChange = StartChanges.keep;
+
         static readonly Logger log = LogManager.GetCurrentClassLogger();
         private static ShowSettings settings = ShowSettings.Default;
 
@@ -75,6 +98,48 @@ namespace MKSlideShop
             }
         }
 
+        /// <summary>
+        /// Keep radio button state
+        /// </summary>
+        public bool KeepChecked
+        {
+            get { return keepChecked; }
+            set
+            {
+                keepChecked = value;
+                OnPropertyChanged();
+            }
+        }
+        private bool keepChecked = true;
+
+        /// <summary>
+        /// Hide radio button state
+        /// </summary>
+        public bool HideChecked
+        {
+            get { return hideChecked; }
+            set
+            {
+                hideChecked = value;
+                OnPropertyChanged();
+            }
+        }
+        private bool hideChecked = true;
+
+        /// <summary>
+        /// Clode Radio button state
+        /// </summary>
+        public bool CloseChecked
+        {
+            get { return closeChecked; }
+            set
+            {
+                closeChecked = value;
+                OnPropertyChanged();
+            }
+        }
+        private bool closeChecked = true;
+
         #endregion // Properties
 
         #region Settings operations
@@ -102,6 +167,9 @@ namespace MKSlideShop
             settings.LastPaths.AddRange(Paths.ToArray());
             settings.ShowTime = Duration;
             settings.BrowserPath = ExplorerPath;
+
+            startChange = KeepChecked ? StartChanges.keep : HideChecked ? StartChanges.hide : StartChanges.close;
+            settings.MainOnStart = (ushort) StartChange;
 
             settings.Save();
         }
@@ -151,6 +219,7 @@ namespace MKSlideShop
             }
             Paths = collect;
             Duration = settings.ShowTime;
+            StartChange = (StartChanges) settings.MainOnStart;
             ExplorerPath = settings.BrowserPath;
         }
 
@@ -255,6 +324,25 @@ namespace MKSlideShop
 
             SlideWindow slides = new(settings);
             slides.StartShow();
+
+            ShowAsDesired();
+        }
+
+        private void ShowAsDesired()
+        {
+            switch(StartChange)
+            {
+                case StartChanges.keep:
+                    return;
+
+                case StartChanges.hide:
+                    App.Current.MainWindow.Visibility= Visibility.Hidden;
+                    return;
+
+                case StartChanges.close:
+                    App.Current.MainWindow.Close();
+                    return;                  
+            }
         }
 
         internal void StoreShow(object sender, RoutedEventArgs e)
@@ -304,6 +392,7 @@ namespace MKSlideShop
                     Paths = new ObservableCollection<string>(setx.Paths);
                     Duration = setx.ShowTime;
                     ExplorerPath = setx.Browser;
+                    StartChange = (StartChanges) setx.MKeep;
 
                     //settings.SettingsPath = setx.SettingsPath;
                     settings.SettingsPath = new FileInfo(oFD.FileName).DirectoryName;

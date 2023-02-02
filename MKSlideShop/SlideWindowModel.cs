@@ -141,7 +141,24 @@ namespace MKSlideShop
         #endregion // Properties
         internal SlideWindowModel(ShowSettings settings)
         {
-            slideSettings = settings;
+            slideSettings = new ShowSettings
+            {
+                LastPaths = settings.LastPaths,
+                ShowTime=settings.ShowTime,
+                BrowserPath=settings.BrowserPath,
+                MainLeft=settings.MainLeft,
+                MainTop=settings.MainTop,
+                MainWidth=settings.MainWidth,
+                MainHeight=settings.MainHeight,
+                MainState=settings.MainState,
+                SlideLeft=settings.SlideLeft,
+                SlideTop=settings.SlideTop,
+                SlideWidth=settings.SlideWidth,
+                SlideHeight=settings.SlideHeight,
+                SlideState=settings.SlideState,
+                SettingsPath = settings.SettingsPath,
+                MainOnStart=settings.MainOnStart
+            };
         }
 
         #region Collect Files
@@ -216,7 +233,7 @@ namespace MKSlideShop
         /// <param name="e"></param>
         private void FWTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            if (sender is System.Timers.Timer timer)
+            if (sender is System.Timers.Timer)
             {
                 log.Debug($"FWTimer tick: {e.SignalTime}");
                 ShowRandomImage();
@@ -545,6 +562,11 @@ namespace MKSlideShop
                     slideSettings.SlideHeight = sw.Height;
 
                     slideSettings.Save();
+                }
+
+                if(slideSettings.MainOnStart == (ushort) MainWindowModel.StartChanges.hide)
+                {
+                    App.Current.MainWindow.Show();
                 }
             }
         }

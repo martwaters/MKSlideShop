@@ -189,5 +189,17 @@ namespace MKSlideShop {
                 this["SettingsPath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public ushort MainOnStart {
+            get {
+                return ((ushort)(this["MainOnStart"]));
+            }
+            set {
+                this["MainOnStart"] = value;
+            }
+        }
     }
 }
