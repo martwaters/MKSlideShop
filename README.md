@@ -13,13 +13,14 @@ So I want to fill the shop shelfs by time if I want more features ...
 It's yet English only. Some features are still hardwired (e.g. the fade-in timing or background color), which could be parameterized.<br>
 Yet I did not need those parameters ...
 
-Currently supported formats (**file extensions**): **jpg, bmp, tif**
+Currently supported formats (**image file extensions**): **bmp, gif, jpg, png, tif**
 
 Active screen elements have tooltips about there usage.<br>
 
-The program is compiled with Visual Studio Version 17.3.4<br>
-Setup is created with Inno Setup 6.2.1.
-The program uses the MetadataExtractor by Drew Noakes,<br>the NLog logging packages and the APICodepack ShellExtensions.
+The program is compiled with Visual Studio Version 17.5.5<br>
+Setup is created with Inno Setup 6.2.2.
+The program uses the MetadataExtractor by Drew Noakes,<br>
+the NLog logging packages and the APICodepack ShellExtensions.
 
 Have fun<br>
 Martin
