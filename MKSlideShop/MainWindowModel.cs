@@ -2,10 +2,13 @@
 using Microsoft.WindowsAPICodePack.Dialogs;
 using NLog;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -34,6 +37,26 @@ namespace MKSlideShop
         #endregion // PropertyChangeHandler
 
         #region Properties
+
+        public ObservableCollection<CheckedItem> FileExtTypes
+        {
+            get { return fileExtTypes; }
+            set
+            {
+                fileExtTypes = value;
+                OnPropertyChanged();
+            }
+
+        }
+        private ObservableCollection<CheckedItem> fileExtTypes = new()
+            {
+                new CheckedItem() { Use=true, Name=".bmp"},
+                new CheckedItem() { Use=true, Name=".gif"},
+                new CheckedItem() { Use=true, Name=".jpg"},
+                new CheckedItem() { Use=true, Name=".png"},
+                new CheckedItem() { Use=true, Name=".tif"},
+            };
+
 
         public enum StartChanges : ushort { keep = 0, hide = 1, close = 2 };
         public StartChanges StartChange 
@@ -171,10 +194,16 @@ namespace MKSlideShop
             startChange = KeepChecked ? StartChanges.keep : HideChecked ? StartChanges.hide : StartChanges.close;
             settings.MainOnStart = (ushort) StartChange;
 
+            settings.ImageTypes = 0;
+            for(int i = 0; i < FileExtTypes.Count; i++)
+            {
+                if (FileExtTypes[i].Use)
+                    settings.ImageTypes |= (ushort) (1 << i);
+            }
             settings.Save();
         }
 
-        internal void MainClosing(object sender, CancelEventArgs e)
+        internal void MainClosing(object? sender, CancelEventArgs? e)
         {
             if (sender is MainWindow mw)
             {
@@ -221,6 +250,14 @@ namespace MKSlideShop
             Duration = settings.ShowTime;
             StartChange = (StartChanges) settings.MainOnStart;
             ExplorerPath = settings.BrowserPath;
+
+            //BitArray bat = new BitArray()
+            for (int i = 0; i < FileExtTypes.Count; i++)
+            {
+                ushort check = (ushort) (1 << i);
+                FileExtTypes[i].Use = (settings.ImageTypes & check) == check;
+            }
+
         }
 
         #endregion // Settings operations
@@ -238,7 +275,9 @@ namespace MKSlideShop
             {
                 if (sender is ListBox listBox)
                 {
-                    if (listBox.SelectedItem is string path)
+                    if (e.KeyStates.HasFlag(KeyStates.Toggled))
+                        Paths = new();
+                    else if (listBox.SelectedItem is string path)
                     {
                         ObservableCollection<string> collect = new(Paths);
                         collect.Remove(path);
@@ -322,7 +361,22 @@ namespace MKSlideShop
                 return;
             }
 
-            SlideWindow slides = new(settings);
+            List<string> extensions = new List<string>();
+            foreach(CheckedItem cit in FileExtTypes)
+            {
+                if(cit.Use)
+                {
+                    extensions.Add(cit.Name);
+                }
+            }
+            if(extensions.Count == 0)
+            {
+                log.Error("No image type selected!");
+                MessageBox.Show("No image type selected!");
+                return;
+            }
+
+            SlideWindow slides = new(settings, extensions);
             slides.StartShow();
 
             ShowAsDesired();
@@ -409,6 +463,8 @@ namespace MKSlideShop
                     settings.MainWidth = setx.MWidth;
                     settings.MainHeight = setx.MHeight;
 
+                    settings.ImageTypes= setx.ImageTypes;
+
                     if (sender is FrameworkElement parent)
                     {
                         while (parent.Parent is FrameworkElement pw)
@@ -439,6 +495,14 @@ namespace MKSlideShop
         {
             AboutDialog ad = new();
             ad.ShowDialog();
+        }
+
+        internal void AutoGenFTypeColumn(object? sender, DataGridAutoGeneratingColumnEventArgs e)
+        {
+            if("Name".Equals(e.Column.Header))
+            {
+                e.Column.IsReadOnly = true;
+            }
         }
     }
 }

@@ -27,7 +27,13 @@ namespace SlideWalker
         /// <summary>
         /// supported image extensions
         /// </summary>
-        static List<string> FileExtensions = new List<string>() { ".jpg", ".bmp", ".tif" };
+        //static List<string> FileExtensions = new List<string>() { ".jpg", ".bmp", ".gif", ".png", ".tif" };
+        public List<string> FileExtensions 
+        {
+            get { return fileExtensions; }
+            set { fileExtensions = value; }
+        }
+        private List<string> fileExtensions = new List<string>() { ".jpg", ".bmp", ".gif", ".png", ".tif" };
 
         #endregion // Properties
 

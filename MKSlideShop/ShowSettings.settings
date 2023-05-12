@@ -47,5 +47,8 @@
     <Setting Name="MainOnStart" Type="System.UInt16" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
+    <Setting Name="ImageTypes" Type="System.UInt16" Scope="User">
+      <Value Profile="(Default)">31</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

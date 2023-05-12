@@ -33,6 +33,8 @@ namespace MKSlideShop
         public string Browser { get; set; } = string.Empty;
         public List<string> Paths { get; set; } = new List<string>();
 
+        public ushort ImageTypes { get; set; } = 31;
+
         public SettingsXml() { }
 
         internal SettingsXml(ShowSettings show)
@@ -62,6 +64,8 @@ namespace MKSlideShop
             show.LastPaths.CopyTo(paths, 0);
 
             Paths = new List<string>(paths);
+
+            ImageTypes = show.ImageTypes;
         }
     }
 }

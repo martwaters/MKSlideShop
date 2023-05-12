@@ -1,4 +1,5 @@
 ﻿using NLog;
+using System.Collections.Generic;
 using System.Windows;
 
 namespace MKSlideShop
@@ -15,10 +16,10 @@ namespace MKSlideShop
         /// <summary>
         /// A window to display a single image, information and handlers
         /// </summary>
-        public SlideWindow(ShowSettings settings)
+        public SlideWindow(ShowSettings settings, List<string> extensions)
         {
             InitializeComponent();
-            viewModel = new SlideWindowModel(settings);
+            viewModel = new SlideWindowModel(settings, extensions);
             viewModel.ImageCtrl = selectedImage;
             viewModel.BrowserPath = settings.BrowserPath;
             //?? viewModel.ImageCtrl.SetImageShader

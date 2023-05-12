@@ -36,7 +36,8 @@
                     <Run Text="allow to stores the settings&#10;"/>
                     The <Bold>'Start Show'</Bold>
                     <Run Text="button starts the slide show&#10;"/>
-                    Supported image file extensions are: <Bold>jpg, bmp, tif</Bold>
+                    Supported image file extensions are:
+                    <Bold>bmp, gif, jpg, png, tif</Bold>
                 </Paragraph>
                 <Paragraph>
                     <Run Text="Have fun&#10;Martin&#10;"/>

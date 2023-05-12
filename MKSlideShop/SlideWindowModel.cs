@@ -139,7 +139,7 @@ namespace MKSlideShop
         ShowSettings slideSettings = ShowSettings.Default;
 
         #endregion // Properties
-        internal SlideWindowModel(ShowSettings settings)
+        internal SlideWindowModel(ShowSettings settings, List<string> extensions)
         {
             slideSettings = new ShowSettings
             {
@@ -159,6 +159,7 @@ namespace MKSlideShop
                 SettingsPath = settings.SettingsPath,
                 MainOnStart=settings.MainOnStart
             };
+            pathWalk.FileExtensions = extensions;
         }
 
         #region Collect Files
@@ -231,7 +232,7 @@ namespace MKSlideShop
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void FWTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        private void FWTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
             if (sender is System.Timers.Timer)
             {
@@ -530,12 +531,12 @@ namespace MKSlideShop
         }
 
 
-        private void InfoWindow_Closing(object sender, CancelEventArgs e)
+        private void InfoWindow_Closing(object? sender, CancelEventArgs e)
         {
             InfoWindow = null;
         }
 
-        internal void WindowClosing(object sender, CancelEventArgs e)
+        internal void WindowClosing(object? sender, CancelEventArgs e)
         {
             if (FWTimer != null)
             {
