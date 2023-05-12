@@ -11,8 +11,8 @@ UninstallDisplayIcon={app}\MKSlideShop.exe
 Compression=lzma2
 SolidCompression=yes
 OutputDir=SetupFiles
-OutputBaseFilename=MKSlideShop.1.0.0
-SourceDir=.\bin\Release\net5.0-windows
+OutputBaseFilename=MKSlideShop.1.1.0
+SourceDir=.\bin\Release\net6.0-windows
 
 [Files]
 Source: "MKSlideShop.exe"; DestDir: "{app}"

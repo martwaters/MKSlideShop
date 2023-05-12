@@ -18,6 +18,8 @@ namespace MKSlideShop
         public double MWidth { get; set; }
         public double MHeight { get; set; }
 
+        public int MKeep { get; set; }
+
         /// <summary>
         /// SlideWindow State
         /// </summary>
@@ -27,8 +29,11 @@ namespace MKSlideShop
         public double SWidth { get; set; }
         public double SHeight { get; set; }
 
+        public string SettingsPath { get; set; } = string.Empty;
         public string Browser { get; set; } = string.Empty;
         public List<string> Paths { get; set; } = new List<string>();
+
+        public ushort ImageTypes { get; set; } = 31;
 
         public SettingsXml() { }
 
@@ -36,6 +41,7 @@ namespace MKSlideShop
         {
 
             Browser = show.BrowserPath;
+            SettingsPath = show.SettingsPath;
 
             ShowTime = show.ShowTime;
 
@@ -45,6 +51,7 @@ namespace MKSlideShop
             MTop = show.MainTop;
             MWidth =show.MainWidth;
 
+            MKeep = show.MainOnStart;
 
             SState = show.SlideState;
 
@@ -57,6 +64,8 @@ namespace MKSlideShop
             show.LastPaths.CopyTo(paths, 0);
 
             Paths = new List<string>(paths);
+
+            ImageTypes = show.ImageTypes;
         }
     }
 }

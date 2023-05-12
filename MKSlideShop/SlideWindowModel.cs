@@ -139,9 +139,27 @@ namespace MKSlideShop
         ShowSettings slideSettings = ShowSettings.Default;
 
         #endregion // Properties
-        internal SlideWindowModel(ShowSettings settings)
+        internal SlideWindowModel(ShowSettings settings, List<string> extensions)
         {
-            slideSettings = settings;
+            slideSettings = new ShowSettings
+            {
+                LastPaths = settings.LastPaths,
+                ShowTime=settings.ShowTime,
+                BrowserPath=settings.BrowserPath,
+                MainLeft=settings.MainLeft,
+                MainTop=settings.MainTop,
+                MainWidth=settings.MainWidth,
+                MainHeight=settings.MainHeight,
+                MainState=settings.MainState,
+                SlideLeft=settings.SlideLeft,
+                SlideTop=settings.SlideTop,
+                SlideWidth=settings.SlideWidth,
+                SlideHeight=settings.SlideHeight,
+                SlideState=settings.SlideState,
+                SettingsPath = settings.SettingsPath,
+                MainOnStart=settings.MainOnStart
+            };
+            pathWalk.FileExtensions = extensions;
         }
 
         #region Collect Files
@@ -214,9 +232,9 @@ namespace MKSlideShop
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void FWTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        private void FWTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
-            if (sender is System.Timers.Timer timer)
+            if (sender is System.Timers.Timer)
             {
                 log.Debug($"FWTimer tick: {e.SignalTime}");
                 ShowRandomImage();
@@ -405,6 +423,7 @@ namespace MKSlideShop
 
             try
             {
+                log.Debug($"Load Drawing: {CurrentFile}");
                 using (var image = System.Drawing.Image.FromFile(CurrentFile))
                 {
                     log.Trace($"Get Drawing.Image orientation");
@@ -414,6 +433,7 @@ namespace MKSlideShop
                         {
                             rotation = OrientationToRotation((short)prop.Value[0]);
                             log.Trace($"\t\tRotate={rotation}\r\n");
+                            break;
                         }
                     }
                 }
@@ -422,7 +442,7 @@ namespace MKSlideShop
             {
                 log.Error(ox);
                 Pause(true);
-                MessageBox.Show($"Error on file '{currentFile}': {ox.Message}");
+                MessageBox.Show($"Error on file '{currentFile}': {ox.Message}\r\n\r\nPresentation paused!");
             }
 
             return rotation;
@@ -496,6 +516,8 @@ namespace MKSlideShop
 
         internal void RunClicked(object sender, RoutedEventArgs e)
         {
+            log.Debug($"Run Clicked");
+            ShowRandomImage();
             Pause(false);
         }
 
@@ -509,12 +531,12 @@ namespace MKSlideShop
         }
 
 
-        private void InfoWindow_Closing(object sender, CancelEventArgs e)
+        private void InfoWindow_Closing(object? sender, CancelEventArgs e)
         {
             InfoWindow = null;
         }
 
-        internal void WindowClosing(object sender, CancelEventArgs e)
+        internal void WindowClosing(object? sender, CancelEventArgs e)
         {
             if (FWTimer != null)
             {
@@ -541,6 +563,11 @@ namespace MKSlideShop
                     slideSettings.SlideHeight = sw.Height;
 
                     slideSettings.Save();
+                }
+
+                if(slideSettings.MainOnStart == (ushort) MainWindowModel.StartChanges.hide)
+                {
+                    App.Current.MainWindow.Show();
                 }
             }
         }

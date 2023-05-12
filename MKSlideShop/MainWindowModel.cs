@@ -2,11 +2,15 @@
 using Microsoft.WindowsAPICodePack.Dialogs;
 using NLog;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -33,6 +37,49 @@ namespace MKSlideShop
         #endregion // PropertyChangeHandler
 
         #region Properties
+
+        public ObservableCollection<CheckedItem> FileExtTypes
+        {
+            get { return fileExtTypes; }
+            set
+            {
+                fileExtTypes = value;
+                OnPropertyChanged();
+            }
+
+        }
+        private ObservableCollection<CheckedItem> fileExtTypes = new()
+            {
+                new CheckedItem() { Use=true, Name=".bmp"},
+                new CheckedItem() { Use=true, Name=".gif"},
+                new CheckedItem() { Use=true, Name=".jpg"},
+                new CheckedItem() { Use=true, Name=".png"},
+                new CheckedItem() { Use=true, Name=".tif"},
+            };
+
+
+        public enum StartChanges : ushort { keep = 0, hide = 1, close = 2 };
+        public StartChanges StartChange 
+        { 
+            get { return startChange; } 
+            set
+            {
+                startChange = value;
+                switch (startChange)
+                {
+                    case StartChanges.keep:
+                        KeepChecked = true; CloseChecked = false; HideChecked = false;
+                        break;
+                    case StartChanges.close:
+                        CloseChecked = true; HideChecked = false; KeepChecked = false;
+                        break;
+                    case StartChanges.hide:
+                        HideChecked = true; CloseChecked = false; KeepChecked = false;
+                        break;
+                }
+            }
+        }
+        private StartChanges startChange = StartChanges.keep;
 
         static readonly Logger log = LogManager.GetCurrentClassLogger();
         private static ShowSettings settings = ShowSettings.Default;
@@ -74,6 +121,48 @@ namespace MKSlideShop
             }
         }
 
+        /// <summary>
+        /// Keep radio button state
+        /// </summary>
+        public bool KeepChecked
+        {
+            get { return keepChecked; }
+            set
+            {
+                keepChecked = value;
+                OnPropertyChanged();
+            }
+        }
+        private bool keepChecked = true;
+
+        /// <summary>
+        /// Hide radio button state
+        /// </summary>
+        public bool HideChecked
+        {
+            get { return hideChecked; }
+            set
+            {
+                hideChecked = value;
+                OnPropertyChanged();
+            }
+        }
+        private bool hideChecked = true;
+
+        /// <summary>
+        /// Clode Radio button state
+        /// </summary>
+        public bool CloseChecked
+        {
+            get { return closeChecked; }
+            set
+            {
+                closeChecked = value;
+                OnPropertyChanged();
+            }
+        }
+        private bool closeChecked = true;
+
         #endregion // Properties
 
         #region Settings operations
@@ -102,10 +191,19 @@ namespace MKSlideShop
             settings.ShowTime = Duration;
             settings.BrowserPath = ExplorerPath;
 
+            startChange = KeepChecked ? StartChanges.keep : HideChecked ? StartChanges.hide : StartChanges.close;
+            settings.MainOnStart = (ushort) StartChange;
+
+            settings.ImageTypes = 0;
+            for(int i = 0; i < FileExtTypes.Count; i++)
+            {
+                if (FileExtTypes[i].Use)
+                    settings.ImageTypes |= (ushort) (1 << i);
+            }
             settings.Save();
         }
 
-        internal void MainClosing(object sender, CancelEventArgs e)
+        internal void MainClosing(object? sender, CancelEventArgs? e)
         {
             if (sender is MainWindow mw)
             {
@@ -150,7 +248,16 @@ namespace MKSlideShop
             }
             Paths = collect;
             Duration = settings.ShowTime;
+            StartChange = (StartChanges) settings.MainOnStart;
             ExplorerPath = settings.BrowserPath;
+
+            //BitArray bat = new BitArray()
+            for (int i = 0; i < FileExtTypes.Count; i++)
+            {
+                ushort check = (ushort) (1 << i);
+                FileExtTypes[i].Use = (settings.ImageTypes & check) == check;
+            }
+
         }
 
         #endregion // Settings operations
@@ -168,7 +275,9 @@ namespace MKSlideShop
             {
                 if (sender is ListBox listBox)
                 {
-                    if (listBox.SelectedItem is string path)
+                    if (e.KeyStates.HasFlag(KeyStates.Toggled))
+                        Paths = new();
+                    else if (listBox.SelectedItem is string path)
                     {
                         ObservableCollection<string> collect = new(Paths);
                         collect.Remove(path);
@@ -252,8 +361,42 @@ namespace MKSlideShop
                 return;
             }
 
-            SlideWindow slides = new(settings);
+            List<string> extensions = new List<string>();
+            foreach(CheckedItem cit in FileExtTypes)
+            {
+                if(cit.Use)
+                {
+                    extensions.Add(cit.Name);
+                }
+            }
+            if(extensions.Count == 0)
+            {
+                log.Error("No image type selected!");
+                MessageBox.Show("No image type selected!");
+                return;
+            }
+
+            SlideWindow slides = new(settings, extensions);
             slides.StartShow();
+
+            ShowAsDesired();
+        }
+
+        private void ShowAsDesired()
+        {
+            switch(StartChange)
+            {
+                case StartChanges.keep:
+                    return;
+
+                case StartChanges.hide:
+                    App.Current.MainWindow.Visibility= Visibility.Hidden;
+                    return;
+
+                case StartChanges.close:
+                    App.Current.MainWindow.Close();
+                    return;                  
+            }
         }
 
         internal void StoreShow(object sender, RoutedEventArgs e)
@@ -264,10 +407,15 @@ namespace MKSlideShop
                 DefaultExt=".slides",
                 Filter= "MKSlides settings (.slides)|*.slides"
             };
-
-            if(sFD.ShowDialog() == true)
+            if (!string.IsNullOrEmpty(settings.SettingsPath) && Directory.Exists(settings.SettingsPath))
             {
-                SettingsXml setx = new SettingsXml(settings);
+                sFD.InitialDirectory = settings.SettingsPath;
+            }
+
+            if (sFD.ShowDialog() == true)
+            {
+                settings.SettingsPath = new FileInfo(sFD.FileName).DirectoryName;
+                SettingsXml setx = new(settings);
                 // iterate settings.Properties ...
                 string setString = XmlClassSerializer.Object2Xml(setx);
                 File.WriteAllText(sFD.FileName, setString);                
@@ -283,7 +431,12 @@ namespace MKSlideShop
                 DefaultExt = ".slides",
                 Filter = "MKSlides settings (.slides)|*.slides"
             };
-            if(oFD.ShowDialog() == true)
+            if (!string.IsNullOrEmpty(settings.SettingsPath) && Directory.Exists(settings.SettingsPath))
+            {
+                oFD.InitialDirectory = settings.SettingsPath;
+            }
+
+            if (oFD.ShowDialog() == true)
             {
                 //XmlReader rd = new XmlReader<ShowSettings>();
                 string xml = File.ReadAllText(oFD.FileName); 
@@ -293,6 +446,10 @@ namespace MKSlideShop
                     Paths = new ObservableCollection<string>(setx.Paths);
                     Duration = setx.ShowTime;
                     ExplorerPath = setx.Browser;
+                    StartChange = (StartChanges) setx.MKeep;
+
+                    //settings.SettingsPath = setx.SettingsPath;
+                    settings.SettingsPath = new FileInfo(oFD.FileName).DirectoryName;
 
                     settings.SlideState = setx.SState;
                     settings.SlideLeft = setx.SLeft;
@@ -305,6 +462,8 @@ namespace MKSlideShop
                     settings.MainTop = setx.MTop;
                     settings.MainWidth = setx.MWidth;
                     settings.MainHeight = setx.MHeight;
+
+                    settings.ImageTypes= setx.ImageTypes;
 
                     if (sender is FrameworkElement parent)
                     {
@@ -336,6 +495,14 @@ namespace MKSlideShop
         {
             AboutDialog ad = new();
             ad.ShowDialog();
+        }
+
+        internal void AutoGenFTypeColumn(object? sender, DataGridAutoGeneratingColumnEventArgs e)
+        {
+            if("Name".Equals(e.Column.Header))
+            {
+                e.Column.IsReadOnly = true;
+            }
         }
     }
 }
