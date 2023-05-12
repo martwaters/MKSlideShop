@@ -57,6 +57,7 @@ namespace MKSlideShop
                 new CheckedItem() { Use=true, Name=".tif"},
             };
 
+        bool HasExtSelected { get; set; } = false;
 
         public enum StartChanges : ushort { keep = 0, hide = 1, close = 2 };
         public StartChanges StartChange 
@@ -95,7 +96,7 @@ namespace MKSlideShop
             {
                 paths = value;
                 OnPropertyChanged();
-                CanStart = paths.Count > 0;
+                CanStart = paths.Count > 0 && HasExtSelected;
             }
         }
 
@@ -503,6 +504,33 @@ namespace MKSlideShop
             {
                 e.Column.IsReadOnly = true;
             }
+            else if("Use".Equals(e.Column.Header)) 
+            {
+                foreach (CheckedItem cit in FileExtTypes)
+                {
+                    cit.PropertyChanged += FileExtChanged;
+                }
+                CheckFileExtSelection();
+            }
+        }
+
+        private void FileExtChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if("Use".Equals(e.PropertyName))
+            {
+                CheckFileExtSelection();
+            }
+        }
+
+        private void CheckFileExtSelection()
+        {
+            HasExtSelected = false;
+            foreach (CheckedItem cit in FileExtTypes)
+            {
+                if (cit.Use)
+                    HasExtSelected = true;
+            }
+            CanStart = Paths.Count > 0 && HasExtSelected;
         }
     }
 }

@@ -35,6 +35,7 @@ namespace MKSlideShop
             pathListBox.KeyDown += viewModel.KeyDown;
 
             ftypeGrid.AutoGeneratingColumn += viewModel.AutoGenFTypeColumn;
+
             Closing += viewModel.MainClosing;
             SourceInitialized += viewModel.WindowInitialized;
 
