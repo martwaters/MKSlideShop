@@ -59,6 +59,7 @@
             <Label x:Name="imgType" Content="File _Type" HorizontalAlignment="Center" Margin="0,5,0,0" VerticalAlignment="Top"/>
             <DataGrid Name="ftypeGrid" ItemsSource="{Binding FileExtTypes}" Margin="0,0,0,10"    
                       RowHeaderWidth="0" Width="72" HorizontalScrollBarVisibility="Hidden"
+                      ToolTip="Select extensions of image types to display"
                       AutoGenerateColumns="True" CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeColumns="False" CanUserSortColumns="False"/>
 
         </StackPanel>
