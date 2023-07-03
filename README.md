@@ -17,7 +17,7 @@ Currently supported formats (**image file extensions**): **bmp, gif, jpg, png, t
 
 Active screen elements have tooltips about there usage.<br>
 
-The program is compiled with Visual Studio Version 17.5.5<br>
+The program is compiled with Visual Studio Version 17.6.4<br>
 Setup is created with Inno Setup 6.2.2.
 The program uses the MetadataExtractor by Drew Noakes,<br>
 the NLog logging packages and the APICodepack ShellExtensions.
